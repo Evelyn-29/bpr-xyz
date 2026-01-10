@@ -192,11 +192,11 @@
 
         {{-- ========== AKSI NAVIGASI ========== --}}
         <div class="pt-8 mt-8 border-t flex justify-between items-center">
-            <a href="{{ route('pengajuan.back.step3') }}"
+            <a href="{{ route('nasabah.pengajuan.back.step3') }}"
                 class="bg-gray-200 text-gray-800 px-6 py-3 rounded-xl hover:bg-gray-300 transition">
                 ← Kembali (Ubah Dokumen)
             </a>
-            <form action="{{ route('pengajuan.review.post') }}" method="POST"
+            <form action="{{ route('nasabah.pengajuan.review.post') }}" method="POST"
                 onsubmit="return confirm('Apakah Anda yakin data yang diisi sudah benar?')">
                 @csrf
                 <button type="submit"

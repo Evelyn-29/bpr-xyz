@@ -1,4 +1,4 @@
-<x-layouts.admin :title="'Antrian Upload SLIK'">
+<x-layouts.app :title="'Antrian Upload SLIK'">
     <x-slot name="header">
         <h1 class="text-xl font-bold text-gray-800">Antrian Upload SLIK</h1>
     </x-slot>
@@ -28,7 +28,7 @@
             <h2 class="text-lg font-semibold text-gray-800">Daftar Nasabah</h2>
 
             {{-- Form Search --}}
-            <form method="GET" action="{{ route('admin.slik.index') }}" class="flex w-full md:w-auto gap-2">
+            <form method="GET" action="{{ route('app.slik.index') }}" class="flex w-full md:w-auto gap-2">
                 <div class="relative w-full md:w-64">
                     <input type="text" name="search" value="{{ request('search') }}"
                         placeholder="Cari Tiket / Nama / NIK..."
@@ -40,14 +40,9 @@
                     </svg>
                 </div>
 
-                <button type="submit"
-                    class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
-                    Cari
-                </button>
-
                 {{-- Tombol Reset jika sedang mencari --}}
                 @if (request('search'))
-                    <a href="{{ route('admin.slik.index') }}"
+                    <a href="{{ route('app.slik.index') }}"
                         class="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-200 transition flex items-center">
                         Reset
                     </a>
@@ -98,10 +93,14 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <a href="{{ route('admin.slik.edit', $app->id) }}"
-                                    class="inline-flex items-center px-3 py-2 bg-white border border-blue-200 text-blue-600 text-xs font-medium rounded hover:bg-blue-50 transition">
-                                    <i class="fa-solid fa-upload mr-2"></i> {{ $app->slik_path ? 'Update' : 'Upload' }}
-                                </a>
+                                @can('upload_slik')
+                                    <a href="{{ route('app.slik.edit', $app->id) }}"
+                                        class="inline-flex items-center justify-center w-8 h-8 bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition shadow-sm"
+                                        title="{{ $app->slik_path ? 'Update' : 'Upload' }} SLIK Nasabah">
+                                        
+                                        <i class="fa-solid fa-upload"></i>
+                                    </a>
+                                @endcan
                             </td>
                         </tr>
                     @empty
@@ -125,4 +124,4 @@
             {{ $applications->links() }}
         </div>
     </div>
-</x-layouts.admin>
+</x-layouts.app>

@@ -89,7 +89,7 @@ class AdminSlikController extends Controller
             ]);
         }
 
-        return redirect()->route('admin.slik.index')
+        return redirect()->route('app.slik.index')
             ->with('success', 'Data SLIK berhasil diunggah untuk pengajuan ' . $application->no_pengajuan);
     }
 }

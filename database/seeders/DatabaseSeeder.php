@@ -20,5 +20,7 @@ class DatabaseSeeder extends Seeder
         // ]);
         $this->call(RolesAndUsersSeeder::class);
         $this->call(CreditFacilitySeeder::class);
+        $this->call(PermissionSeeder::class);
+        $this->call(SuperAdminSeeder::class);
     }
 }

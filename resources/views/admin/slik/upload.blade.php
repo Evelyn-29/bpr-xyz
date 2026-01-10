@@ -1,7 +1,7 @@
-<x-layouts.admin :title="'Upload Hasil SLIK'">
+<x-layouts.app :title="'Upload Hasil SLIK'">
     <x-slot name="header">
         <div class="flex items-center gap-4">
-            <a href="{{ route('admin.slik.index') }}" class="text-gray-500 hover:text-gray-700">
+            <a href="{{ route('app.slik.index') }}" class="text-gray-500 hover:text-gray-700">
                 <i class="fa-solid fa-arrow-left text-xl"></i>
             </a>
             <h1 class="text-xl font-bold text-gray-800">Upload Hasil SLIK</h1>
@@ -26,8 +26,8 @@
                 </div>
             </div>
 
-            <form action="{{ route('admin.slik.update', $application->id) }}" method="POST"
-                enctype="multipart/form-data" class="space-y-6">
+            <form action="{{ route('app.slik.update', $application->id) }}" method="POST" enctype="multipart/form-data"
+                class="space-y-6">
                 @csrf
                 @method('PUT')
 
@@ -74,4 +74,4 @@
             </form>
         </div>
     </div>
-</x-layouts.admin>
+</x-layouts.app>

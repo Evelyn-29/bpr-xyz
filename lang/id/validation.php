@@ -103,7 +103,7 @@ return [
         'array' => 'The :attribute field must have at least :min items.',
         'file' => 'The :attribute field must be at least :min kilobytes.',
         'numeric' => 'Kolom :attribute setidaknya bernilai :min.',
-        'string' => 'Kolom :attribute maksimal :min karakter.',
+        'string' => 'Kolom :attribute minimal :min karakter.',
     ],
     'min_digits' => 'Kolom :attribute tidak boleh kurang dari :min digits.',
     'missing' => 'The :attribute field must be missing.',

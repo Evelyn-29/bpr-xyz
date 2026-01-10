@@ -4,16 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CreditFacility extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'kode',
         'nama',
-        'maksimal_jangka_waktu',
         'deskripsi',
+        'max_jangka_waktu',
+        'aktif'
     ];
 
     /**

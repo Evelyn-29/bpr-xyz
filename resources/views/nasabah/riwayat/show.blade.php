@@ -73,7 +73,8 @@
                     </div>
                     <div>
                         <dt class="text-sm text-gray-500">Jumlah diterima</dt>
-                        <dd class="font-medium text-green-600">Rp {{ number_format($jumlah_diterima, 0, ',', '.') }}</dd>
+                        <dd class="font-medium text-green-600">Rp {{ number_format($jumlah_diterima, 0, ',', '.') }}
+                        </dd>
                     </div>
                 </dl>
             </div>
@@ -169,7 +170,7 @@
                         <h4 class="text-xl font-bold text-gray-800">Lunas / Selesai</h4>
                         <p class="text-sm text-gray-500 mt-1">Terima kasih, kewajiban kredit Anda telah selesai.</p>
 
-                        <a href="{{ route('pengajuan.step1') }}"
+                        <a href="{{ route('nasabah.pengajuan.step1') }}"
                             class="mt-4 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition">
                             Ajukan Kredit Baru
                         </a>
@@ -204,7 +205,7 @@
                         </div>
                         <h4 class="text-xl font-bold text-yellow-700">Draft</h4>
                         <p class="text-sm text-gray-500 mt-1">Pengajuan belum diselesaikan.</p>
-                        <a href="{{ route('pengajuan.step1') }}"
+                        <a href="{{ route('nasabah.pengajuan.step1') }}"
                             class="mt-4 inline-block bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-yellow-600">Lanjutkan
                             Pengisian</a>
                     @endif

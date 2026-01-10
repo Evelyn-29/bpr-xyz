@@ -1,7 +1,7 @@
-<x-layouts.manager :title="'Analisa Kredit'">
+<x-layouts.app :title="'Analisa Kredit'">
     <x-slot name="header">
         <div class="flex items-center gap-4">
-            <a href="{{ route('manager.rekomendasi.index') }}" class="text-gray-500 hover:text-gray-700">
+            <a href="{{ route('app.rekomendasi.index') }}" class="text-gray-500 hover:text-gray-700">
                 <i class="fa-solid fa-arrow-left text-xl"></i>
             </a>
             <h1 class="text-xl font-bold text-gray-800">Analisa & Rekomendasi</h1>
@@ -132,82 +132,108 @@
 
         </div>
 
-        <div class="lg:col-span-1">
-            <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-6 sticky top-6">
-                <h3 class="text-lg font-bold text-gray-900 border-b pb-3 mb-4">
-                    <i class="fa-solid fa-gavel text-gray-600 mr-2"></i> Keputusan Manager
-                </h3>
+        @can('update_rekomendasi')
+            <div class="lg:col-span-1" x-data="{
+                jangkaWaktu: '{{ old('jangka_waktu', $application->jangka_waktu) }}' != '0' ? '{{ old('jangka_waktu', $application->jangka_waktu) }}' : '',
+                maxTenor: {{ $application->creditFacility->max_jangka_waktu ?? 60 }},
+                recStatus: '{{ old('recommendation_status') }}',
+                {{-- Ambil dari DB, format desimal titik ke koma: 1000000.00 -> 1.000.000,00 --}}
+                recommendedAmount: '{{ old('manager_recommended_amount')
+                    ? number_format((float) old('manager_recommended_amount'), 2, ',', '.')
+                    : ($application->jumlah_pinjaman > 0
+                        ? number_format($application->jumlah_pinjaman, 2, ',', '.')
+                        : '') }}',
+            
+                formatCurrency(val) {
+                    if (!val) return '';
+            
+                    let cleanValue = val.toString().replace(/[^0-9,]/g, '');
+            
+                    let parts = cleanValue.split(',');
+                    let integerPart = parts[0];
+                    let decimalPart = parts.length > 1 ? parts[1] : null;
+            
+                    integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            
+                    if (decimalPart !== null) {
+                        return integerPart + ',' + decimalPart.substring(0, 2);
+                    }
+            
+                    return integerPart;
+                }
+            }" x-init="recommendedAmount = formatCurrency(recommendedAmount)">
 
-                @if ($errors->any())
-                    <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-                        <h3 class="text-red-700 font-semibold mb-2">Ada kesalahan dalam pengisian:</h3>
-                        <ul class="text-sm text-red-600 list-disc list-inside">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
+                <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-6 sticky top-6">
+                    <h3 class="text-lg font-bold text-gray-900 border-b pb-3 mb-4">
+                        <i class="fa-solid fa-gavel text-gray-600 mr-2"></i> Keputusan Manager
+                    </h3>
 
-                <form action="{{ route('manager.rekomendasi.update', $application->id) }}" method="POST">
-                    @csrf
-                    @method('PUT')
+                    <form action="{{ route('app.rekomendasi.update', $application->id) }}" method="POST">
+                        @csrf
+                        @method('PUT')
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Rekomendasi</label>
-                        <select name="recommendation_status" id="recStatus"
-                            class="w-full rounded-lg border-gray-300 focus:ring-blue-500" required>
-                            <option value="">-- Pilih --</option>
-                            <option value="Rekomendasi Disetujui">Rekomendasikan SETUJU</option>
-                            <option value="Rekomendasi Ditolak">Rekomendasikan TOLAK</option>
-                        </select>
-                    </div>
-
-                    <div id="approvalFields" style="display:none;">
                         <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Plafond Direkomendasikan
-                                (Rp)</label>
-                            <input type="number" name="recommended_amount" value="{{ $application->jumlah_pinjaman }}"
-                                class="w-full rounded-lg border-gray-300 focus:ring-blue-500 font-semibold text-green-700">
-                            <p class="text-xs text-gray-500 mt-1">Bisa diubah jika ingin menurunkan plafond.</p>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Rekomendasi</label>
+                            <select name="recommendation_status" id="recStatus" x-model="recStatus"
+                                class="w-full rounded-lg border-gray-300 focus:ring-blue-500" required>
+                                <option value="">-- Pilih --</option>
+                                <option value="Rekomendasi Disetujui">Rekomendasikan SETUJU</option>
+                                <option value="Rekomendasi Ditolak">Rekomendasikan TOLAK</option>
+                            </select>
                         </div>
 
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tenor Direkomendasikan
-                                (Bulan)</label>
-                            <input type="number" name="recommended_tenor" value="{{ $application->jangka_waktu }}"
-                                class="w-full rounded-lg border-gray-300 focus:ring-blue-500">
+                        <div x-show="recStatus === 'Rekomendasi Disetujui'" x-transition>
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Plafond Direkomendasikan
+                                    (Rp)</label>
+                                <input type="text" name="manager_recommended_amount" x-model="recommendedAmount"
+                                    @input="recommendedAmount = formatCurrency($event.target.value)"
+                                    class="w-full rounded-lg border-gray-300 focus:ring-blue-500 font-semibold text-green-700"
+                                    placeholder="Contoh: 10.000.000,50">
+                                @error('manager_recommended_amount')
+                                    <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tenor Direkomendasikan
+                                    (Bulan)</label>
+                                <input type="number" name="manager_recommended_tenor" x-data="{ tenor: {{ old('manager_recommended_tenor', $application->jangka_waktu) }} }"
+                                    x-model="tenor" @input="if(tenor > maxTenor) tenor = maxTenor"
+                                    @blur="if(tenor < 1 || !tenor) tenor = 1" min="1" :max="maxTenor"
+                                    class="w-full rounded-lg border-gray-300 focus:ring-blue-500 @error('manager_recommended_tenor')
+border-red-500
+@enderror"
+                                    required>
+
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Batas: <span class="font-bold text-gray-700">1 s/d <span x-text="maxTenor"></span>
+                                        bulan</span>.
+                                </p>
+
+                                @error('manager_recommended_tenor')
+                                    <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Catatan Analisa (5C)</label>
-                        <textarea name="manager_note" rows="5" required
-                            placeholder="Jelaskan alasan rekomendasi Anda. Analisa Character, Capacity, dll..."
-                            class="w-full rounded-lg border-gray-300 focus:ring-blue-500 text-sm"></textarea>
-                    </div>
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Catatan Analisa (5C)</label>
+                            <textarea name="manager_note" rows="5" minlength="10" required
+                                placeholder="Jelaskan alasan rekomendasi Anda. Analisa Character, Capacity, dll... (isi minimal 10 karakter)"
+                                class="w-full rounded-lg border-gray-300 focus:ring-blue-500 text-sm">{{ old('manager_note') }}</textarea>
+                        </div>
 
-                    <button type="submit"
-                        class="w-full bg-gray-800 text-white py-3 rounded-xl font-bold hover:bg-gray-900 transition shadow-lg">
-                        Kirim ke Direktur
-                    </button>
-                </form>
+
+                        <button type="submit"
+                            class="w-full bg-gray-800 text-white py-3 rounded-xl font-bold hover:bg-gray-900 transition shadow-lg">
+                            Kirim ke Direktur
+                        </button>
+
+                    </form>
+                </div>
             </div>
-        </div>
+        @endcan
     </div>
 
-    @push('scripts')
-        <script>
-            const statusSelect = document.getElementById('recStatus');
-            const approvalFields = document.getElementById('approvalFields');
-
-            statusSelect.addEventListener('change', function() {
-                if (this.value === 'Rekomendasi Disetujui') {
-                    approvalFields.style.display = 'block';
-                } else {
-                    approvalFields.style.display = 'none';
-                }
-            });
-        </script>
-    @endpush
-</x-layouts.manager>
+</x-layouts.app>

@@ -21,7 +21,7 @@
     <section id="pengajuan" class="bg-white rounded-2xl shadow-md p-8 mx-auto" x-data="{
         menikah: '{{ $application->nasabahProfile->status_perkawinan ?? '' }}' === 'Menikah',
         maxJangkaWaktu: null,
-        jangkaWaktu: '{{ old('jangka_waktu', $application->jangka_waktu ?? '') }}',
+        jangkaWaktu: '{{ old('jangka_waktu', $application->jangka_waktu) }}' != '0' ? '{{ old('jangka_waktu', $application->jangka_waktu) }}' : '',
         facilities: {{ Js::from($facilities->map(fn($f) => ['id' => $f->id, 'nama' => $f->nama, 'max' => $f->max_jangka_waktu])) }},
         updateMaxJangka(id) {
             const f = this.facilities.find(f => f.id == id);
@@ -31,7 +31,7 @@
         x-init="updateMaxJangka($refs.facility.value)">
         <h2 class="text-xl font-semibold mb-6 text-gray-800 border-b pb-2">Fasilitas Kredit</h2>
 
-        <form method="POST" action="{{ route('pengajuan.step2.post') }}">
+        <form method="POST" action="{{ route('nasabah.pengajuan.step2.post') }}">
             @csrf
 
             {{-- Fasilitas Kredit --}}
@@ -51,10 +51,20 @@
                             </option>
                         @endforeach
                     </select>
+                    @error('credit_facility_id')
+                        <p class="text-sm text-red-500 mt-1">Pilihan Fasilitas Kredit harus diisi</p>
+                    @enderror
                 </div>
 
-                <x-text-input name="jumlah_pinjaman" label="Jumlah Pinjaman (Rp)" type="number" required
-                    :value="old('jumlah_pinjaman', $application->jumlah_pinjaman)" />
+                <x-text-input name="jumlah_pinjaman" id="jumlah_pinjaman" label="Jumlah Pinjaman (Rp)" type="text"
+                    required :value="old('jumlah_pinjaman', $application->jumlah_pinjaman ?: '')" x-data="{
+                        formatCurrency(val) {
+                            if (!val || val == 0) return '';
+                            let number = val.toString().replace(/\D/g, '');
+                            return number.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                        }
+                    }" x-init="$el.value = formatCurrency($el.value)"
+                    x-on:input="$el.value = formatCurrency($el.value)" />
 
                 {{-- Jangka Waktu --}}
                 <div>
@@ -139,7 +149,7 @@
 
             {{-- Navigasi --}}
             <div class="pt-8 mt-8 border-t text-right">
-                <a href="{{ route('pengajuan.back.step1') }}"
+                <a href="{{ route('nasabah.pengajuan.back.step1') }}"
                     class="bg-gray-200 text-gray-800 px-6 py-3 rounded-xl hover:bg-gray-300 transition">
                     ← Kembali
                 </a>
@@ -161,9 +171,16 @@
                 "* Pastikan No. NPWP diisi di formulir sebelumnya, untuk jumlah pinjaman lebih dari Rp50.000.000.";
             jumlahInput.parentNode.appendChild(npwpNotice);
 
+            // Fungsi untuk memformat saat pertama kali load
+            if (jumlahInput.value) {
+                jumlahInput.value = jumlahInput.value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            }
+
             jumlahInput.addEventListener("input", function() {
-                const value = parseFloat(this.value.replace(/\D/g, "")) || 0;
-                if (value > 50000000) {
+                // Ambil angka aslinya saja untuk pengecekan NPWP
+                const rawValue = parseFloat(this.value.replace(/\./g, "")) || 0;
+
+                if (rawValue > 50000000) {
                     npwpNotice.classList.remove('hidden');
                 } else {
                     npwpNotice.classList.add('hidden');

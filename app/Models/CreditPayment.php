@@ -26,8 +26,6 @@ class CreditPayment extends Model
         'reversal_user_id',
         'catatan_teller',
     ];
-    
-    protected $guarded = ['id'];
 
     protected $casts = [
         'jatuh_tempo' => 'date',

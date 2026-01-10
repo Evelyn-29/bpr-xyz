@@ -54,11 +54,12 @@ class AdminAngsuranController extends Controller
      */
     public function update(Request $request, $paymentId)
     {
+        //dd($request->all());
         $payment = CreditPayment::findOrFail($paymentId);
 
         $request->validate([
             'tanggal_bayar' => 'required|date',
-            'jumlah_bayar'  => 'required|numeric|min:0',
+            'jumlah_bayar'  => 'required|numeric|min:1',
             'denda'         => 'nullable|numeric|min:0',
             'catatan'       => 'nullable|string',
         ]);

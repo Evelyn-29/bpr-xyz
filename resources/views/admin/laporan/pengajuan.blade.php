@@ -1,13 +1,4 @@
-@php
-    if (Auth::user()->hasRole('Direktur')) {
-        $layout = 'layouts.direktur';
-    } elseif (Auth::user()->hasRole('Manager')) {
-        $layout = 'layouts.manager';
-    } else {
-        $layout = 'layouts.admin';
-    }
-@endphp
-<x-dynamic-component :component="$layout" :title="'Laporan Persetujuan Kredit'">
+<x-layouts.app :title="'Laporan Persetujuan Kredit'">
     <x-slot name="header">
         <h1 class="text-xl font-bold text-gray-800">Laporan Persetujuan Kredit</h1>
     </x-slot>
@@ -98,4 +89,4 @@
             </tbody>
         </table>
     </div>
-</x-dynamic-component>
+</x-layouts.app>

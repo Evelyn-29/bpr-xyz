@@ -45,7 +45,7 @@ class PengajuanKreditController extends Controller
             ->exists();
 
         if ($activeApplication) {
-            return redirect()->route('riwayat.index')
+            return redirect()->route('nasabah.riwayat.index')
                 ->with('error', 'Anda masih memiliki pengajuan yang sedang diproses atau pinjaman aktif.');
         }
 
@@ -61,11 +61,11 @@ class PengajuanKreditController extends Controller
 
             // Redirect sesuai progres terakhir
             if ($draft->status === 'draft_step2') {
-                return redirect()->route('pengajuan.step2');
+                return redirect()->route('nasabah.pengajuan.step2');
             } elseif ($draft->status === 'draft_step3') {
                 // Jika draft_step3, cek apakah sudah lengkap atau belum.
                 // Amannya ke step3 dulu, nanti step3 yang lempar ke review jika user mau
-                return redirect()->route('pengajuan.step3');
+                return redirect()->route('nasabah.pengajuan.step3');
             }
             // Jika draft_step1, biarkan lanjut di bawah (render view step 1)
         }
@@ -78,7 +78,8 @@ class PengajuanKreditController extends Controller
     private function generateKodeNasabah()
     {
         $prefix = 'NSBPAR-' . date('Ym') . '-';
-        
+        //$prefix = 'NSBXYZ-' . date('Ym') . '-';
+
         $lastProfile = NasabahProfile::where('kode_nasabah', 'like', $prefix . '%')
             ->orderBy('kode_nasabah', 'desc')
             ->first();
@@ -102,7 +103,7 @@ class PengajuanKreditController extends Controller
             'nama_lengkap' => 'required|string|max:255',
             'jenis_kelamin' => 'required|string',
             'no_ktp' => 'required|digits:16|unique:nasabah_profiles,no_ktp,' . $userId . ',user_id',
-            'no_hp' => 'required|numeric|max_digits:15|unique:nasabah_profiles,no_hp,' . $userId . ',user_id',
+            'no_hp' => 'required|string|max:15|unique:nasabah_profiles,no_hp,' . $userId . ',user_id',
             'email' => 'required|email',
             'alamat_tinggal' => 'required|string',
             'alamat_ktp' => 'required|string',
@@ -150,12 +151,12 @@ class PengajuanKreditController extends Controller
 
         // Redirect logic
         if ($application->status === 'draft_step2') {
-            return redirect()->route('pengajuan.step2')->with('success', 'Data profil diperbarui.');
+            return redirect()->route('nasabah.pengajuan.step2')->with('success', 'Data profil diperbarui.');
         } elseif ($application->status === 'draft_step3') {
-            return redirect()->route('pengajuan.step3')->with('success', 'Data profil diperbarui.');
+            return redirect()->route('nasabah.pengajuan.step3')->with('success', 'Data profil diperbarui.');
         }
 
-        return redirect()->route('pengajuan.step2')->with('success', 'Data profil disimpan.');
+        return redirect()->route('nasabah.pengajuan.step2')->with('success', 'Data profil disimpan.');
     }
 
     // ================= STEP 2: FASILITAS & DETAIL =================
@@ -165,12 +166,12 @@ class PengajuanKreditController extends Controller
         $this->ensureApplicationSession();
         $applicationId = session('application_id');
 
-        if (!$applicationId) return redirect()->route('pengajuan.step1');
+        if (!$applicationId) return redirect()->route('nasabah.pengajuan.step1');
 
         $application = CreditApplication::with('nasabahProfile')->find($applicationId);
 
         if (!$application) {
-            return redirect()->route('pengajuan.step1');
+            return redirect()->route('nasabah.pengajuan.step1');
         }
 
         // 1. Coba ambil detail dari draft saat ini
@@ -205,22 +206,30 @@ class PengajuanKreditController extends Controller
 
     public function postStep2(Request $request)
     {
+        // --- STEP 1: SANITASI DATA (PENTING UNTUK MASKING) ---
+        // Hapus titik dari jumlah_pinjaman agar menjadi angka murni (misal: 10.000.000 -> 10000000)
+        if ($request->has('jumlah_pinjaman')) {
+            $cleanJumlah = str_replace('.', '', $request->jumlah_pinjaman);
+            $request->merge([
+                'jumlah_pinjaman' => $cleanJumlah,
+            ]);
+        }
+
         $applicationId = session('application_id');
         $application = CreditApplication::findOrFail($applicationId);
         $profile = NasabahProfile::where('user_id', Auth::id())->first();
 
+        // Ambil data fasilitas untuk mendapatkan max_jangka_waktu
         $facility = CreditFacility::find($request->credit_facility_id);
 
-        if (!$facility) {
-            return back()->withErrors(['credit_facility_id' => 'Fasilitas kredit tidak valid.']);
-        }
+        // Jika fasilitas tidak ditemukan, kita beri default agar validasi jangka_waktu tidak error
+        $maxJangkaWaktu = $facility ? $facility->max_jangka_waktu : 60;
 
-        $maxJangkaWaktu = $facility->max_jangka_waktu ?? 60;
-
+        // --- STEP 2: DEFINISI RULES ---
         $rules = [
             'credit_facility_id' => 'required|exists:credit_facilities,id',
             'tujuan_pinjaman' => 'required|string',
-            'jumlah_pinjaman' => 'required|numeric|min:10000000|max:5000000000',
+            'jumlah_pinjaman' => 'required|numeric|min:1000000|max:5000000000', // Sekarang aman karena sudah di-merge
             'jangka_waktu' => 'required|integer|min:1|max:' . $maxJangkaWaktu,
             'sumber_pendapatan' => 'required|string',
         ];
@@ -234,36 +243,35 @@ class PengajuanKreditController extends Controller
                 'alamat_ktp_pasangan' => 'required|string|max:255',
                 'pekerjaan_pasangan' => 'required|string|max:100',
                 'email_pasangan' => 'required|email|max:255',
-                'no_hp_pasangan' => 'required|numeric|max_digits:15',
+                'no_hp_pasangan' => 'required|string|max:15', // Gunakan string untuk no HP agar lebih aman
             ]);
         }
 
-        // Rules Penjamin (Selalu wajib)
+        // Rules Penjamin
         $rules = array_merge($rules, [
             'nama_penjamin' => 'required|string|max:255',
             'no_ktp_penjamin' => 'required|string|max:20',
             'hubungan_penjamin' => 'required|string|max:50',
             'alamat_penjamin' => 'required|string|max:255',
             'email_penjamin' => 'required|email|max:255',
-            'no_hp_penjamin' => 'required|numeric|max_digits:15',
+            'no_hp_penjamin' => 'required|string|max:15',
         ]);
 
+        // --- STEP 3: JALANKAN VALIDASI ---
+        // Jika gagal, Laravel otomatis kembali ke form dengan $errors
         $validated = $request->validate($rules);
 
-        // Validasi NPWP > 50 Juta
+        // Validasi NPWP > 50 Juta (Gunakan $validated agar angkanya sudah bersih)
         if ($validated['jumlah_pinjaman'] > 50000000 && empty($profile->no_npwp)) {
-            return redirect()->route('pengajuan.step1')
+            return redirect()->route('nasabah.pengajuan.step1') // Balik ke step 1 karena NPWP ada di sana
                 ->with('warning', 'NPWP wajib diisi untuk pengajuan lebih dari 50 juta.')
                 ->withInput();
         }
 
         $requiresNpwp = ($validated['jumlah_pinjaman'] > 50000000) ? 1 : 0;
-
-        // Update Application Main Data
-        // Kita update status jadi 'draft_step2' HANYA jika status sekarang masih 'draft_step1'
-        // Jika status sudah 'draft_step3', jangan dimundurkan (kecuali logikamu mengharuskan demikian)
         $newStatus = ($application->status == 'draft_step1') ? 'draft_step2' : $application->status;
 
+        // --- STEP 4: UPDATE DATA ---
         $application->update([
             'credit_facility_id' => $validated['credit_facility_id'],
             'tujuan_pinjaman' => $validated['tujuan_pinjaman'],
@@ -274,34 +282,34 @@ class PengajuanKreditController extends Controller
             'requires_npwp' => $requiresNpwp,
         ]);
 
-        // Update Detail (Pasangan & Penjamin)
         CreditApplicationDetail::updateOrCreate(
             ['credit_application_id' => $application->id],
             [
-                'nama_pasangan' => $profile->status_perkawinan === 'Menikah' ? ($validated['nama_pasangan'] ?? null) : null,
-                'no_ktp_pasangan' => $profile->status_perkawinan === 'Menikah' ? ($validated['no_ktp_pasangan'] ?? null) : null,
-                'alamat_tinggal_pasangan' => $profile->status_perkawinan === 'Menikah' ? ($validated['alamat_tinggal_pasangan'] ?? null) : null,
-                'alamat_ktp_pasangan' => $profile->status_perkawinan === 'Menikah' ? ($validated['alamat_ktp_pasangan'] ?? null) : null,
-                'pekerjaan_pasangan' => $profile->status_perkawinan === 'Menikah' ? ($validated['pekerjaan_pasangan'] ?? null) : null,
-                'email_pasangan' => $profile->status_perkawinan === 'Menikah' ? ($validated['email_pasangan'] ?? null) : null,
-                'no_hp_pasangan' => $profile->status_perkawinan === 'Menikah' ? ($validated['no_hp_pasangan'] ?? null) : null,
+                // Data Pasangan
+                'nama_pasangan' => ($profile->status_perkawinan === 'Menikah') ? $validated['nama_pasangan'] : null,
+                'no_ktp_pasangan' => ($profile->status_perkawinan === 'Menikah') ? $validated['no_ktp_pasangan'] : null,
+                'alamat_tinggal_pasangan' => ($profile->status_perkawinan === 'Menikah') ? $validated['alamat_tinggal_pasangan'] : null,
+                'alamat_ktp_pasangan' => ($profile->status_perkawinan === 'Menikah') ? $validated['alamat_ktp_pasangan'] : null,
+                'pekerjaan_pasangan' => ($profile->status_perkawinan === 'Menikah') ? $validated['pekerjaan_pasangan'] : null,
+                'email_pasangan' => ($profile->status_perkawinan === 'Menikah') ? $validated['email_pasangan'] : null,
+                'no_hp_pasangan' => ($profile->status_perkawinan === 'Menikah') ? $validated['no_hp_pasangan'] : null,
 
-                'nama_penjamin' => $validated['nama_penjamin'] ?? null,
-                'no_ktp_penjamin' => $validated['no_ktp_penjamin'] ?? null,
-                'hubungan_penjamin' => $validated['hubungan_penjamin'] ?? null,
-                'alamat_penjamin' => $validated['alamat_penjamin'] ?? null,
-                'email_penjamin' => $validated['email_penjamin'] ?? null,
-                'no_hp_penjamin' => $validated['no_hp_penjamin'] ?? null,
+                // Data Penjamin
+                'nama_penjamin' => $validated['nama_penjamin'],
+                'no_ktp_penjamin' => $validated['no_ktp_penjamin'],
+                'hubungan_penjamin' => $validated['hubungan_penjamin'],
+                'alamat_penjamin' => $validated['alamat_penjamin'],
+                'email_penjamin' => $validated['email_penjamin'],
+                'no_hp_penjamin' => $validated['no_hp_penjamin'],
             ]
         );
 
-        return redirect()->route('pengajuan.step3')
-            ->with('success', 'Data detail pinjaman disimpan.');
+        return redirect()->route('nasabah.pengajuan.step3')->with('success', 'Data detail pinjaman disimpan.');
     }
 
     public function backToStep1()
     {
-        return redirect()->route('pengajuan.step1');
+        return redirect()->route('nasabah.pengajuan.step1');
     }
 
     // ================= STEP 3: DOKUMEN & AGUNAN =================
@@ -311,17 +319,17 @@ class PengajuanKreditController extends Controller
         $this->ensureApplicationSession();
         $applicationId = session('application_id');
 
-        if (!$applicationId) return redirect()->route('pengajuan.step1');
+        if (!$applicationId) return redirect()->route('nasabah.pengajuan.step1');
 
         $application = CreditApplication::with('nasabahProfile')->find($applicationId);
 
         // Validasi Flow
-        if (!$application) return redirect()->route('pengajuan.step1');
+        if (!$application) return redirect()->route('nasabah.pengajuan.step1');
 
         // Cek detail step 2
         $applicationDetail = CreditApplicationDetail::where('credit_application_id', $applicationId)->first();
         if (!$applicationDetail) {
-            return redirect()->route('pengajuan.step2');
+            return redirect()->route('nasabah.pengajuan.step2');
         }
 
         // --- LOGIKA AUTO-FILL AGUNAN ---
@@ -372,7 +380,7 @@ class PengajuanKreditController extends Controller
         $application = CreditApplication::find($applicationId);
         $profile = NasabahProfile::where('user_id', Auth::id())->firstOrFail();
 
-        if (!$application) return redirect()->route('pengajuan.step1');
+        if (!$application) return redirect()->route('nasabah.pengajuan.step1');
 
         // --- VALIDASI ---
         $rules = [
@@ -420,9 +428,6 @@ class PengajuanKreditController extends Controller
 
         $processFile = function ($path, $targetFolder) use ($application) {
             if (!$path) return null;
-
-            $currentAppFolder = "dokumen/{$application->id}";
-            $currentAgunanFolder = "agunan/{$application->id}";
 
             // KASUS 1: File Baru (dari Temp)
             if (str_starts_with($path, 'temp/')) {
@@ -493,7 +498,7 @@ class PengajuanKreditController extends Controller
 
         $application->update(['status' => 'draft_step3']);
 
-        return redirect()->route('pengajuan.review')
+        return redirect()->route('nasabah.pengajuan.review')
             ->with('success', 'Dokumen berhasil disimpan.');
     }
 
@@ -507,7 +512,7 @@ class PengajuanKreditController extends Controller
 
     public function backToStep2()
     {
-        return redirect()->route('pengajuan.step2');
+        return redirect()->route('nasabah.pengajuan.step2');
     }
 
     // ================= REVIEW & SUBMIT =================
@@ -517,7 +522,7 @@ class PengajuanKreditController extends Controller
         $this->ensureApplicationSession();
         $applicationId = session('application_id');
 
-        if (!$applicationId) return redirect()->route('pengajuan.step1');
+        if (!$applicationId) return redirect()->route('nasabah.pengajuan.step1');
 
         $application = CreditApplication::with([
             'nasabahProfile',
@@ -527,11 +532,11 @@ class PengajuanKreditController extends Controller
             'documents'
         ])->find($applicationId);
 
-        if (!$application) return redirect()->route('pengajuan.step1');
+        if (!$application) return redirect()->route('nasabah.pengajuan.step1');
 
         // Pastikan status sudah draft_step3
         if ($application->status !== 'draft_step3') {
-            return redirect()->route('pengajuan.step3');
+            return redirect()->route('nasabah.pengajuan.step3');
         }
 
         $dokumenMap = $application->documents->keyBy('jenis_dokumen');
@@ -595,6 +600,6 @@ class PengajuanKreditController extends Controller
 
     public function backToStep3()
     {
-        return redirect()->route('pengajuan.step3');
+        return redirect()->route('nasabah.pengajuan.step3');
     }
 }

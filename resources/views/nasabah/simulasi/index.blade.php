@@ -26,12 +26,16 @@
                         </select>
                     </div>
 
-                    {{-- Input Nominal --}}
+                    {{-- Input Nominal (UPDATED SUPPORT CURRENCY) --}}
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Pinjaman (Rp)</label>
-                        <input type="number" x-model="form.amount" placeholder="Contoh: 50000000"
-                            class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                        <p class="text-xs text-gray-500 mt-1">Masukkan angka tanpa titik.</p>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Pinjaman</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2 text-gray-500 font-semibold">Rp</span>
+                            <input type="text" x-model="form.amount"
+                                @input="form.amount = formatRupiah($event.target.value)" placeholder="0"
+                                class="w-full pl-10 border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 font-semibold text-gray-800">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Masukkan nominal pinjaman.</p>
                     </div>
 
                     {{-- Input Tenor --}}
@@ -146,7 +150,7 @@
 
                     {{-- Tombol Ajukan --}}
                     <div class="mt-6">
-                        <a href="{{ route('pengajuan.step1') }}"
+                        <a href="{{ route('nasabah.pengajuan.step1') }}"
                             class="block w-full text-center bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition shadow-lg transform hover:-translate-y-1">
                             Ajukan Kredit Sekarang
                         </a>
@@ -169,8 +173,14 @@
                     result: null,
                     errorMessage: null,
 
+                    // Helper Format Rupiah
+                    formatRupiah(value) {
+                        let number = value.replace(/[^0-9]/g, '');
+                        if (number === '') return '';
+                        return new Intl.NumberFormat('id-ID').format(number);
+                    },
+
                     async hitungSimulasi() {
-                        // Reset
                         this.loading = true;
                         this.errorMessage = null;
                         this.result = null;
@@ -181,14 +191,21 @@
                             return;
                         }
 
+                        // SANITASI: Hilangkan titik sebelum kirim ke server
+                        // Copy object form biar tampilan di input tetap ada titiknya
+                        let payload = {
+                            ...this.form,
+                            amount: this.form.amount.toString().replace(/\./g, '')
+                        };
+
                         try {
-                            const response = await fetch("{{ route('simulasi.calculate') }}", {
+                            const response = await fetch("{{ route('nasabah.simulasi.calculate') }}", {
                                 method: "POST",
                                 headers: {
                                     "Content-Type": "application/json",
                                     "X-CSRF-TOKEN": "{{ csrf_token() }}"
                                 },
-                                body: JSON.stringify(this.form)
+                                body: JSON.stringify(payload) // Kirim payload yg sudah bersih
                             });
 
                             const data = await response.json();

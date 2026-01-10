@@ -26,6 +26,7 @@ class CreditApplication extends Model
         'managed_at',
         'recommendation_status',
         'manager_recommended_amount',
+        'manager_recommended_tenor',
         'recommended_amount',
         'recommended_tenor',
         'manager_note',

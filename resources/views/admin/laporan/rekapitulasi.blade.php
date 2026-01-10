@@ -1,13 +1,4 @@
-@php
-    if (Auth::user()->hasRole('Direktur')) {
-        $layout = 'layouts.direktur';
-    } elseif (Auth::user()->hasRole('Manager')) {
-        $layout = 'layouts.manager';
-    } else {
-        $layout = 'layouts.admin';
-    }
-@endphp
-<x-dynamic-component :component="$layout" :title="'Laporan Rekapitulasi'">
+<x-layouts.app :title="'Laporan Rekapitulasi'">
     <x-slot name="header">
         <h1 class="text-xl font-bold text-gray-800">Laporan Rekapitulasi</h1>
     </x-slot>
@@ -78,15 +69,22 @@
                         <td class="p-2 border text-right">{{ number_format($row->rekap->jumlah, 0, ',', '.') }}</td>
 
                         {{-- Angsuran --}}
-                        <td class="p-2 border text-right">{{ number_format($row->rekap->angsuran_pokok, 0, ',', '.') }}</td>
-                        <td class="p-2 border text-right">{{ number_format($row->rekap->angsuran_bunga, 0, ',', '.') }}</td>
-                        <td class="p-2 border text-right">{{ number_format($row->rekap->total_angsuran, 0, ',', '.') }}</td>
+                        <td class="p-2 border text-right">{{ number_format($row->rekap->angsuran_pokok, 0, ',', '.') }}
+                        </td>
+                        <td class="p-2 border text-right">{{ number_format($row->rekap->angsuran_bunga, 0, ',', '.') }}
+                        </td>
+                        <td class="p-2 border text-right">{{ number_format($row->rekap->total_angsuran, 0, ',', '.') }}
+                        </td>
 
                         {{-- Tunggakan --}}
-                        <td class="p-2 border text-right">{{ number_format($row->rekap->tunggakan_pokok, 0, ',', '.') }}</td>
-                        <td class="p-2 border text-right">{{ number_format($row->rekap->tunggakan_bunga, 0, ',', '.') }}</td>
-                        <td class="p-2 border text-right">{{ number_format($row->rekap->tunggakan_denda, 0, ',', '.') }}</td>
-                        <td class="p-2 border text-right">{{ number_format($row->rekap->total_tunggakan, 0, ',', '.') }}</td>
+                        <td class="p-2 border text-right">{{ number_format($row->rekap->tunggakan_pokok, 0, ',', '.') }}
+                        </td>
+                        <td class="p-2 border text-right">
+                            {{ number_format($row->rekap->tunggakan_bunga, 0, ',', '.') }}</td>
+                        <td class="p-2 border text-right">
+                            {{ number_format($row->rekap->tunggakan_denda, 0, ',', '.') }}</td>
+                        <td class="p-2 border text-right">
+                            {{ number_format($row->rekap->total_tunggakan, 0, ',', '.') }}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -105,4 +103,4 @@
             </tfoot>
         </table>
     </div>
-</x-dynamic-component>
+</x-layouts.app>

@@ -44,7 +44,7 @@
         @endif
         <h2 class="text-xl font-semibold mb-6 text-gray-800 border-b pb-2">Data Pemohon</h2>
 
-        <form method="POST" action="{{ route('pengajuan.step1.post') }}">
+        <form method="POST" action="{{ route('nasabah.pengajuan.step1.post') }}">
             @csrf
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -56,7 +56,7 @@
                         <p class="text-xs text-gray-500 mt-1">Kode identitas unik Anda di sistem kami.</p>
                     </div>
                 @endif
-                <x-text-input name="nama_lengkap" label="Nama Lengkap" :value="old('nama_lengkap', $profile->nama_lengkap)" :readonly="$isLocked" required />
+                <x-text-input name="nama_lengkap" label="Nama Lengkap" :value="old('nama_lengkap', $profile->nama_lengkap ?? Auth::user()->name)" :readonly="$isLocked" required />
                 <x-text-input name="email" label="Email" type="email"
                     value="{{ old('email', $profile->email ?? Auth::user()->email) }}" required readonly />
                 <x-select-input name="jenis_kelamin" label="Jenis Kelamin" :options="['Laki-laki' => 'Laki-laki', 'Perempuan' => 'Perempuan']" :value="$profile->jenis_kelamin"

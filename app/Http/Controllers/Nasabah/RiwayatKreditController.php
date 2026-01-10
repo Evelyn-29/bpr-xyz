@@ -19,18 +19,18 @@ class RiwayatKreditController extends Controller
 
         return view('nasabah.riwayat.index', compact('applications'));
     }
-    
+
     public function show($id)
     {
         $application = CreditApplication::with([
-            'nasabahProfile', 
-            'creditFacility', 
-            'detail', 
-            'collateral', 
+            'nasabahProfile',
+            'creditFacility',
+            'detail',
+            'collateral',
             'documents'
         ])
-        ->where('user_id', Auth::id())
-        ->findOrFail($id);
+            ->where('user_id', Auth::id())
+            ->findOrFail($id);
 
         return view('nasabah.riwayat.show', compact('application'));
     }
@@ -38,21 +38,21 @@ class RiwayatKreditController extends Controller
     public function aktif()
     {
         $application = CreditApplication::with([
-            'nasabahProfile', 
-            'creditFacility', 
-            'detail', 
-            'collateral', 
+            'nasabahProfile',
+            'creditFacility',
+            'detail',
+            'collateral',
             'documents',
             'payments'
         ])
-        ->where('user_id', Auth::id())
-        ->where('status', 'Disetujui')
-        ->latest('approved_at')
-        ->first();
+            ->where('user_id', Auth::id())
+            ->where('status', 'Disetujui')
+            ->latest('approved_at')
+            ->first();
 
         if (!$application) {
-            return redirect()->route('riwayat.index')
-                ->with('warning', 'Anda tidak memiliki pinjaman yang sedang aktif (Disetujui).');
+            return redirect()->route('nasabah.riwayat.index')
+                ->with('error', 'Anda tidak memiliki pinjaman yang sedang aktif (Disetujui).');
         }
 
         return view('nasabah.riwayat.show', compact('application'));

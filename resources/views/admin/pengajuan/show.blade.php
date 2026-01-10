@@ -1,7 +1,7 @@
-<x-layouts.admin :title="'Detail Pengajuan ' . $application->no_pengajuan">
+<x-layouts.app :title="'Detail Pengajuan ' . $application->no_pengajuan">
     <x-slot name="header">
         <div class="flex items-center gap-4">
-            <a href="{{ route('admin.pengajuan.index') }}" class="text-gray-500 hover:text-gray-700">
+            <a href="{{ route('app.pengajuan.index') }}" class="text-gray-500 hover:text-gray-700">
                 <i class="fa-solid fa-arrow-left text-xl"></i>
             </a>
             <h1 class="text-xl font-bold text-gray-800">Detail Pengajuan</h1>
@@ -234,4 +234,4 @@
             </div>
         </div>
     </div>
-</x-layouts.admin>
+</x-layouts.app>

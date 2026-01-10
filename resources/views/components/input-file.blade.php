@@ -86,7 +86,7 @@
                             '{{ csrf_token() }}');
 
                         try {
-                            let response = await fetch('{{ route('pengajuan.upload.temp') }}', {
+                            let response = await fetch('{{ route('nasabah.pengajuan.upload.temp') }}', {
                                 method: 'POST',
                                 body: formData
                             });

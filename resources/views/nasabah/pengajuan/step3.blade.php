@@ -51,7 +51,7 @@
         @endif
 
 
-        <form method="POST" action="{{ route('pengajuan.step3.post') }}" enctype="multipart/form-data">
+        <form method="POST" action="{{ route('nasabah.pengajuan.step3.post') }}" enctype="multipart/form-data">
             @csrf
 
             {{-- ========== BAGIAN DOKUMEN IDENTITAS ========== --}}
@@ -199,7 +199,7 @@
 
             {{-- ========== AKSI NAVIGASI ========== --}}
             <div class="pt-8 mt-8 border-t text-right">
-                <a href="{{ route('pengajuan.step2') }}"
+                <a href="{{ route('nasabah.pengajuan.step2') }}"
                     class="bg-gray-200 text-gray-800 px-6 py-3 rounded-xl hover:bg-gray-300 transition">
                     ← Kembali
                 </a>

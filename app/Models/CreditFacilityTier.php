@@ -13,7 +13,7 @@ class CreditFacilityTier extends Model
         'credit_facility_id',
         'min_plafond',
         'max_plafond',
-        'suku_bunga',
+        'bunga',
     ];
 
     public function creditFacility()

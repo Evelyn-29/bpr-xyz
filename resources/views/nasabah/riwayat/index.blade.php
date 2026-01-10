@@ -45,7 +45,7 @@
                 </div>
                 <h3 class="text-lg font-medium text-gray-900">Belum ada pengajuan</h3>
                 <p class="text-gray-500 mt-1 mb-6">Anda belum pernah mengajukan kredit sebelumnya.</p>
-                <a href="{{ route('pengajuan.step1') }}"
+                <a href="{{ route('nasabah.pengajuan.step1') }}"
                     class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
                     Ajukan Kredit Sekarang
                 </a>
@@ -115,7 +115,8 @@
         @endif
     </div>
 
-    <div class="bg-gray-200 rounded-2xl border border-gray-300 overflow-hidden mt-6 p-4 text-red-500 text-sm font-semibold">
+    <div
+        class="bg-gray-200 rounded-2xl border border-gray-300 overflow-hidden mt-6 p-4 text-red-500 text-sm font-semibold">
         * Harap membawa file dokumen asli untuk dilampirkan saat pengikatan kredit.
     </div>
 </x-layouts.nasabah>

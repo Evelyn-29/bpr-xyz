@@ -44,13 +44,14 @@ class AuthenticatedSessionController extends Controller
         // Ambil user dan arahkan berdasarkan role
         $user = Auth::user();
 
-        if ($user->hasRole('Admin')) {
-            return redirect()->route('admin.dashboard');
-        } elseif ($user->hasRole('Manager')) {
-            return redirect()->route('manager.dashboard');
-        } elseif ($user->hasRole('Direktur')) {
-            return redirect()->route('direktur.dashboard');
-        } elseif ($user->hasRole('Nasabah')) {
+        // 1. Cek Superadmin / Staff Internal DULUAN
+        // Kita pakai hasAnyRole (jika pakai Spatie) atau cek satu-satu
+        if ($user->hasRole(['Superadmin', 'Admin', 'Manager', 'Direktur'])) {
+            return redirect()->route('app.dashboard');
+        }
+
+        // 2. Baru Cek Nasabah
+        elseif ($user->hasRole('Nasabah')) {
             return redirect()->route('nasabah.dashboard');
         }
 

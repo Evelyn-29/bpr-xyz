@@ -82,12 +82,19 @@ class DirekturPersetujuanController extends Controller
     public function update(Request $request, $id)
     {
         $application = CreditApplication::findOrFail($id);
+        $maxTenor = $application->creditFacility->max_jangka_waktu ?? 60;
+
+        if ($request->filled('final_amount')) {
+            $clean = str_replace('.', '', $request->final_amount);
+            $clean = str_replace(',', '.', $clean);
+            $request->merge(['final_amount' => $clean]);
+        }
 
         $request->validate([
             'decision' => 'required|in:approve,reject',
-            'direktur_note'=> 'nullable|string',
+            'direktur_note' => 'nullable|string',
             'final_amount' => 'required_if:decision,approve|numeric|min:1000000',
-            'final_tenor'  => 'required_if:decision,approve|numeric|min:1',
+            'final_tenor'  => "required_if:decision,approve|numeric|min:1|max:{$maxTenor}",
             'tgl_akad'     => 'required_if:decision,approve|date',
             'jam_akad'     => 'required_if:decision,approve',
         ]);
@@ -105,6 +112,7 @@ class DirekturPersetujuanController extends Controller
                 $tenor  = $request->final_tenor;
                 $tglAkad = $request->tgl_akad; // Ambil dari input
                 $jamAkad = $request->jam_akad; // Ambil dari input
+                $dirkturNote = $request->direktur_note;
 
                 $facilityId = $application->credit_facility_id;
 
@@ -148,15 +156,14 @@ class DirekturPersetujuanController extends Controller
                     'jam_akad'             => $jamAkad, // Simpan Jam
                     'recommended_amount'   => $amount,
                     'recommended_tenor'    => $tenor,
+                    'direktur_note'        => $dirkturNote,
                 ]);
             }
 
             DB::commit();
 
             $statusMsg = $request->decision === 'approve' ? 'disetujui' : 'ditolak';
-            /*return redirect()->route('direktur.persetujuan.index')
-                ->with('success', "Pengajuan berhasil $statusMsg dengan plafond Rp " . number_format($request->final_amount ?? 0));*/
-            return redirect()->route('direktur.persetujuan.index')
+            return redirect()->route('app.persetujuan.index')
                 ->with('success', "Pengajuan berhasil $statusMsg");
         } catch (\Exception $e) {
             DB::rollBack();

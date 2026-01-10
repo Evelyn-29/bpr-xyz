@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-layouts.app>
     <x-slot name="header">
         <h1 class="font-bold text-xl">Welcome, {{ Auth::user()->name }}!</h1>
     </x-slot>
@@ -29,7 +29,7 @@
 
             {{-- 1. TOTAL PENGAJUAN --}}
             <div class="bg-white rounded-2xl shadow-md p-6 hover:shadow-xl transition-all border-l-4 border-blue-500">
-                <a href="{{ route('admin.pengajuan.index') }}">
+                <a href="{{ route('app.pengajuan.index') }}">
                     <div class="flex items-center justify-between">
                         <div>
                             <h3 class="text-sm font-medium text-gray-500 mb-1">Total Pengajuan</h3>
@@ -44,7 +44,7 @@
 
             {{-- 2. MENUNGGU VERIFIKASI --}}
             <div class="bg-white rounded-2xl shadow-md p-6 hover:shadow-xl transition-all border-l-4 border-yellow-500">
-                <a href="{{ route('admin.slik.index') }}">
+                <a href="{{ route('app.slik.index') }}">
                     <div class="flex items-center justify-between">
                         <div>
                             <h3 class="text-sm font-medium text-gray-500 mb-1">Menunggu Verifikasi</h3>
@@ -59,7 +59,7 @@
 
             {{-- 3. DISETUJUI --}}
             <div class="bg-white rounded-2xl shadow-md p-6 hover:shadow-xl transition-all border-l-4 border-green-500">
-                <a href="{{ route('admin.angsuran.index') }}">
+                <a href="{{ route('app.angsuran.index') }}">
                     <div class="flex items-center justify-between">
                         <div>
                             <h3 class="text-sm font-medium text-gray-500 mb-1">Disetujui</h3>
@@ -74,7 +74,7 @@
 
             {{-- 4. DITOLAK --}}
             <div class="bg-white rounded-2xl shadow-md p-6 hover:shadow-xl transition-all border-l-4 border-red-500">
-                <a href="{{ route('admin.pengajuan.index') }}">
+                <a href="{{ route('app.pengajuan.index') }}">
                     <div class="flex items-center justify-between">
                         <div>
                             <h3 class="text-sm font-medium text-gray-500 mb-1">Ditolak</h3>
@@ -89,4 +89,4 @@
 
         </div>
     </section>
-</x-layouts.admin>
+</x-layouts.app>

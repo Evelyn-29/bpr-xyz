@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Manager;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\CreditApplication;
+use App\Models\CreditFacility;
 use Illuminate\Support\Facades\Auth;
 
 class ManagerRekomendasiController extends Controller
@@ -47,31 +48,43 @@ class ManagerRekomendasiController extends Controller
     public function update(Request $request, $id)
     {
         $application = CreditApplication::findOrFail($id);
+        $maxTenor = $application->creditFacility->max_jangka_waktu ?? 60;
+
+        if ($request->filled('manager_recommended_amount')) {
+            $clean = str_replace('.', '', $request->manager_recommended_amount);
+            $clean = str_replace(',', '.', $clean);
+
+            $request->merge([
+                'manager_recommended_amount' => $clean,
+            ]);
+        }
 
         $request->validate([
             'recommendation_status' => 'required|in:Rekomendasi Disetujui,Rekomendasi Ditolak',
-            'recommended_amount'    => 'required_if:recommendation_status,Rekomendasi Disetujui|numeric|min:0',
-            'recommended_tenor'     => 'required_if:recommendation_status,Rekomendasi Disetujui|numeric|min:1',
+            'manager_recommended_amount' => 'required_if:recommendation_status,Rekomendasi Disetujui|numeric|min:1000000',
+            'manager_recommended_tenor' => "required_if:recommendation_status,Rekomendasi Disetujui|integer|min:1|max:{$maxTenor}",
             'manager_note'          => 'required|string|min:10',
+        ], [
+            'manager_recommended_amount.min' => "Batas minimal plafond adalah Rp. 1000.000,00.",
         ]);
 
         $application->update([
             'manager_id'            => Auth::id(),
             'managed_at'            => now(),
             'recommendation_status' => $request->recommendation_status,
-            'recommended_amount_manager' => $request->recommended_amount,
-            'recommended_tenor'     => $request->recommended_tenor,
+            'manager_recommended_amount' => $request->manager_recommended_amount,
+            'manager_recommended_tenor' => $request->manager_recommended_tenor,
             'manager_note'          => $request->manager_note,
         ]);
 
-        return redirect()->route('manager.rekomendasi.index')
+        return redirect()->route('app.rekomendasi.index')
             ->with('success', 'Rekomendasi berhasil dikirim ke Direktur.');
     }
 
     public function riwayat(Request $request)
     {
         $query = CreditApplication::with(['nasabahProfile', 'creditFacility'])
-            ->where('manager_id', Auth::id())
+            //->where('manager_id', Auth::id())
             ->whereNotNull('recommendation_status');
 
         if ($request->has('search') && $request->search != '') {
@@ -97,6 +110,10 @@ class ManagerRekomendasiController extends Controller
             'collateral',
             'documents'
         ])->findOrFail($id);
+
+        if ($application->manager_id == null) {
+            abort(404);
+        }
 
         return view('manager.rekomendasi.detail', compact('application'));
     }
