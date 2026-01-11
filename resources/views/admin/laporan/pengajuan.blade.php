@@ -45,9 +45,9 @@
                     <th class="p-2 border">NO PENGAJUAN</th>
                     <th class="p-2 border">NAMA NASABAH</th>
                     <th class="p-2 border">JENIS KREDIT</th>
-                    <th class="p-2 border">TENOR</th>
                     <th class="p-2 border">JENIS SERTIFIKAT</th>
-                    <th class="p-2 border">PLAFOND DIAJUKAN</th>
+                    <th class="p-2 border">TENOR</th>
+                    <th class="p-2 border">PLAFOND </th>
                     <th class="p-2 border">PLAFOND DISETUJUI</th>
                     <th class="p-2 border">TANGGAL PENGAJUAN</th>
                     <th class="p-2 border">TANGGAL REALISASI</th>

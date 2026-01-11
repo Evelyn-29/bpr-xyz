@@ -229,7 +229,7 @@ class PengajuanKreditController extends Controller
         $rules = [
             'credit_facility_id' => 'required|exists:credit_facilities,id',
             'tujuan_pinjaman' => 'required|string',
-            'jumlah_pinjaman' => 'required|numeric|min:1000000|max:5000000000', // Sekarang aman karena sudah di-merge
+            'jumlah_pinjaman' => 'required|numeric|min:1000000', // Sekarang aman karena sudah di-merge
             'jangka_waktu' => 'required|integer|min:1|max:' . $maxJangkaWaktu,
             'sumber_pendapatan' => 'required|string',
         ];
