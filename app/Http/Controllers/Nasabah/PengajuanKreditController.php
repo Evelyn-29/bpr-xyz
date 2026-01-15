@@ -220,16 +220,32 @@ class PengajuanKreditController extends Controller
         $profile = NasabahProfile::where('user_id', Auth::id())->first();
 
         // Ambil data fasilitas untuk mendapatkan max_jangka_waktu
-        $facility = CreditFacility::find($request->credit_facility_id);
+        $facility = CreditFacility::with('tiers')->find($request->credit_facility_id);
 
         // Jika fasilitas tidak ditemukan, kita beri default agar validasi jangka_waktu tidak error
         $maxJangkaWaktu = $facility ? $facility->max_jangka_waktu : 60;
+
+        // Logic Validasi Max Plafond Dynamic
+        $maxPlafondRule = '';
+
+        if ($facility && $facility->tiers->count() > 0) {
+            // 1. Cek apakah ada tier yang 'max_plafond'-nya NULL (Unlimited)
+            $isUnlimited = $facility->tiers->contains(function ($tier) {
+                return is_null($tier->max_plafond);
+            });
+
+            // 2. Jika TIDAK Unlimited, cari angka terbesar dari semua tier
+            if (!$isUnlimited) {
+                $maxLimit = $facility->tiers->max('max_plafond'); // Ambil nilai tertinggi
+                $maxPlafondRule = '|max:' . $maxLimit;
+            }
+        }
 
         // --- STEP 2: DEFINISI RULES ---
         $rules = [
             'credit_facility_id' => 'required|exists:credit_facilities,id',
             'tujuan_pinjaman' => 'required|string',
-            'jumlah_pinjaman' => 'required|numeric|min:1000000', // Sekarang aman karena sudah di-merge
+            'jumlah_pinjaman'    => 'required|numeric|min:1000000' . $maxPlafondRule,
             'jangka_waktu' => 'required|integer|min:1|max:' . $maxJangkaWaktu,
             'sumber_pendapatan' => 'required|string',
         ];
