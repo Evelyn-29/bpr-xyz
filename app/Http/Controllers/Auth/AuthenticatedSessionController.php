@@ -46,13 +46,17 @@ class AuthenticatedSessionController extends Controller
 
         // 1. Cek Superadmin / Staff Internal DULUAN
         // Kita pakai hasAnyRole (jika pakai Spatie) atau cek satu-satu
+        /*
         if ($user->hasRole(['Superadmin', 'Admin', 'Manager', 'Direktur'])) {
             return redirect()->route('app.dashboard');
         }
+        */
 
         // 2. Baru Cek Nasabah
-        elseif ($user->hasRole('Nasabah')) {
+        if ($user->hasRole('Nasabah')) {
             return redirect()->route('nasabah.dashboard');
+        } else {
+            return redirect()->route('app.dashboard');
         }
 
         // Fallback (jika role tidak dikenali)
