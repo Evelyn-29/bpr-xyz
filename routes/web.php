@@ -102,7 +102,7 @@ Route::middleware(['auth', 'role:Nasabah'])
 // 3. ZONA INTERNAL APLIKASI (Unified Route)
 // ==============================================================================
 // Menggabungkan Admin, Manager, Direktur, Superadmin
-Route::middleware(['auth', 'role:Admin|Manager|Direktur|Superadmin'])
+Route::middleware(['auth'])
     ->prefix('app')     // URL jadi: domain.com/app/...
     ->name('app.')      // Route Name jadi: app.dashboard, app.laporan...
     ->group(function () {
