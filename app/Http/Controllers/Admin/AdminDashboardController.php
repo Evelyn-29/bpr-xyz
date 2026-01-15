@@ -19,44 +19,27 @@ class AdminDashboardController extends Controller
     {
         $user = $request->user();
 
-        $totalPengajuan = CreditApplication::whereNotNull('submitted_at')->count();
-        $menungguVerifikasi = CreditApplication::where('status', 'Menunggu Verifikasi')->count();
-        $disetujui = CreditApplication::where('status', 'Disetujui')->count();
-        $ditolak = CreditApplication::where('status', 'Ditolak')->count();
-
-        $totalDisbursed = CreditApplication::where('status', 'Disetujui')->sum('jumlah_pinjaman');
-        $outstanding = CreditPayment::where('status_pembayaran', '!=', 'Paid')->sum('tagihan_pokok');
-        $profitBunga = CreditPayment::where('status_pembayaran', 'Paid')->sum('tagihan_bunga');
+        $data = [
+            'user' => $user,
+            'totalPengajuan' => CreditApplication::whereNotNull('submitted_at')->count(),
+            'menungguVerifikasi' => CreditApplication::where('status', 'Menunggu Verifikasi')->count(),
+            'disetujui' => CreditApplication::where('status', 'Disetujui')->count(),
+            'ditolak' => CreditApplication::where('status', 'Ditolak')->count(),
+        ];
 
         if (Auth::user()->hasRole('Admin')) {
-            return view('admin.index', compact(
-                'user',
-                'totalPengajuan',
-                'menungguVerifikasi',
-                'disetujui',
-                'ditolak'
-            ));
+            return view('admin.index', $data);
         } else if (Auth::user()->hasRole('Manager')) {
-            return view('manager.index', compact(
-                'user',
-                'totalPengajuan',
-                'menungguVerifikasi',
-                'disetujui',
-                'ditolak'
-            ));
+            return view('manager.index', $data);
         } else if (Auth::user()->hasRole('Direktur')) {
-            return view('direktur.index', compact(
-                'user',
-                'totalPengajuan',
-                'menungguVerifikasi',
-                'disetujui',
-                'ditolak',
-                'totalDisbursed',
-                'outstanding',
-                'profitBunga'
-            ));
+            $data['totalDisbursed'] = CreditApplication::where('status', 'Disetujui')->sum('jumlah_pinjaman');
+            $data['outstanding'] = CreditPayment::where('status_pembayaran', '!=', 'Paid')->sum('tagihan_pokok');
+            $data['profitBunga'] = CreditPayment::where('status_pembayaran', 'Paid')->sum('tagihan_bunga');
+            return view('direktur.index', $data);
         } else if (Auth::user()->hasRole('Superadmin')) {
-            return view('superadmin.index');
+            return view('superadmin.index', $data);
+        } else {
+            return view('admin.index', $data);
         }
     }
 }
