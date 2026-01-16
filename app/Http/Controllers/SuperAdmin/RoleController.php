@@ -54,4 +54,26 @@ class RoleController extends Controller
         return redirect()->route('app.roles.edit', $role->id)
             ->with('success', 'Role berhasil dibuat! Silakan atur hak aksesnya di bawah ini.');
     }
+
+    public function destroy($id)
+    {
+        $role = Role::withCount('users')->findOrFail($id);
+
+        // 1. KEAMANAN LEVEL 1: Jangan hapus Superadmin
+        if (in_array($role->name, ['Superadmin'])) {
+            return back()->with('error', 'Role Inti (Superadmin) tidak dapat dihapus demi keamanan sistem.');
+        }
+
+        // 2. KEAMANAN LEVEL 2: Cek apakah masih ada user yang pakai role ini
+        if ($role->users_count > 0) {
+            return back()->with('error', "Gagal menghapus! Masih ada {$role->users_count} user yang menggunakan role ini. Silakan ganti role user tersebut terlebih dahulu.");
+        }
+
+        try {
+            $role->delete();
+            return redirect()->route('app.roles.index')->with('success', 'Role berhasil dihapus permanen.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Terjadi kesalahan saat menghapus data.');
+        }
+    }
 }

@@ -32,6 +32,23 @@
                                 class="inline-flex items-center justify-center w-8 h-8 bg-white border border-blue-200 text-blue-500 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition shadow-sm"
                                 title="Edit">
                                 <i class="fa-solid fa-pencil"></i>
+                            </a>
+
+                            @if ($role->name !== 'Superadmin')
+                                <form action="{{ route('app.roles.destroy', $role->id) }}" method="POST" class="inline"
+                                    onsubmit="return confirm('Yakin ingin menghapus Role {{ $role->name }}? Pastikan tidak ada user yang menggunakannya.')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center justify-center w-8 h-8 bg-white border border-red-200 text-red-500 rounded-lg hover:bg-red-50 hover:text-red-600 transition shadow-sm">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </form>
+                            @else
+                                {{-- Icon gembok untuk superadmin --}}
+                                <span class="inline-flex items-center justify-center w-8 h-8 bg-white border border-gray-200 text-gray-500 rounded-lg hover:bg-gray-50 hover:text-gray-600 transition shadow-sm cursor-not-allowed" title="Role Superadmin Terkunci">
+                                    <i class="fa-solid fa-lock"></i>
+                                </span>
+                            @endif
                         </td>
                     </tr>
                 @endforeach

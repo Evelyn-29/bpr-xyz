@@ -41,7 +41,8 @@ class UserManagementController extends Controller
 
     public function create()
     {
-        $roles = Role::pluck('name', 'name');
+        $roles = Role::where('name', '!=', 'Nasabah')
+            ->pluck('name', 'name');
         return view('superadmin.settings.users.create', compact('roles'));
     }
 
@@ -76,7 +77,8 @@ class UserManagementController extends Controller
     public function edit($id)
     {
         $user = User::findOrFail($id);
-        $roles = Role::pluck('name', 'name');
+        $roles = Role::where('name', '!=', 'Nasabah')
+            ->pluck('name', 'name');
         return view('superadmin.settings.users.edit', compact('user', 'roles'));
     }
 
