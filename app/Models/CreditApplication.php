@@ -61,6 +61,11 @@ class CreditApplication extends Model
         return $this->belongsTo(User::class, 'manager_id');
     }
 
+    public function direktur()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
     public function creditFacility()
     {
         return $this->belongsTo(CreditFacility::class);

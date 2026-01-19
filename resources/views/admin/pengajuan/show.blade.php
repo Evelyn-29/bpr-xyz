@@ -1,47 +1,79 @@
-<x-layouts.app :title="'Detail Pengajuan ' . $application->no_pengajuan">
+<x-layouts.app :title="'Detail Pengajuan'">
     <x-slot name="header">
         <div class="flex items-center gap-4">
             <a href="{{ route('app.pengajuan.index') }}" class="text-gray-500 hover:text-gray-700">
                 <i class="fa-solid fa-arrow-left text-xl"></i>
             </a>
-            <h1 class="text-xl font-bold text-gray-800">Detail Pengajuan</h1>
+            <h1 class="text-xl font-bold text-gray-800">Detail Pengajuan #{{ $application->no_pengajuan }}</h1>
         </div>
     </x-slot>
 
-    {{-- HEADER STATUS --}}
-    <div
-        class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-            <div class="flex items-center gap-3 mb-1">
-                <h2 class="text-2xl font-bold text-gray-800">{{ $application->no_pengajuan }}</h2>
-
-                @php
-                    $statusColors = [
-                        'Menunggu Verifikasi' => 'bg-blue-100 text-blue-700 border-blue-200',
-                        'Disetujui' => 'bg-green-100 text-green-700 border-green-200',
-                        'Ditolak' => 'bg-red-100 text-red-700 border-red-200',
-                    ];
-                    $statusClass = $statusColors[$application->status] ?? 'bg-gray-100 text-gray-600';
-                @endphp
-                <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $statusClass }}">
-                    {{ $application->status }}
-                </span>
-            </div>
-            <p class="text-sm text-gray-500">
-                Diajukan pada: {{ $application->submitted_at ? $application->submitted_at->format('d F Y, H:i') : '-' }}
-                WIB
-                oleh <span
-                    class="font-semibold text-gray-700">{{ $application->nasabahProfile->nama_lengkap ?? $application->user->name }}</span>
-            </p>
-        </div>
-    </div>
-
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        {{-- KOLOM KIRI (Data Utama) --}}
+        {{-- ================= KOLOM KIRI (SAMA PERSIS DENGAN SHOW) ================= --}}
         <div class="lg:col-span-2 space-y-6">
+            <div
+                class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <div class="flex items-center gap-3 mb-1">
+                        <h2 class="text-2xl font-bold text-gray-800">{{ $application->no_pengajuan }}</h2>
 
-            {{-- 1. INFORMASI KREDIT --}}
+                        @php
+                            $statusColors = [
+                                'Menunggu Verifikasi' => 'bg-blue-100 text-blue-700 border-blue-200',
+                                'Disetujui' => 'bg-green-100 text-green-700 border-green-200',
+                                'Ditolak' => 'bg-red-100 text-red-700 border-red-200',
+                            ];
+                            $statusClass = $statusColors[$application->status] ?? 'bg-gray-100 text-gray-600';
+                        @endphp
+                        <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $statusClass }}">
+                            {{ $application->status }}
+                        </span>
+                    </div>
+                    <p class="text-sm text-gray-500">
+                        Diajukan pada:
+                        {{ $application->submitted_at ? $application->submitted_at->format('d F Y, H:i') : '-' }}
+                        WIB
+                        oleh <span
+                            class="font-semibold text-gray-700">{{ $application->nasabahProfile->nama_lengkap ?? $application->user->name }}</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-blue-50 rounded-2xl shadow-sm border border-blue-100 p-6">
+                <h3 class="text-lg font-bold text-blue-800 mb-4 flex items-center">
+                    <i class="fa-solid fa-magnifying-glass-chart mr-2"></i> Hasil Pengecekan Admin (SLIK)
+                </h3>
+                <div class="grid grid-cols-2 gap-4">
+                    @isset($application->slik_status)
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase">Status Kolektibilitas</p>
+                            <p class="font-bold text-gray-800 text-lg">{{ $application->slik_status ?? 'Belum Ada Data' }}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase">File SLIK</p>
+                            @if ($application->slik_path)
+                                <a href="{{ Storage::url($application->slik_path) }}" target="_blank"
+                                    class="text-blue-600 underline text-sm font-semibold hover:text-blue-800">
+                                    <i class="fa-solid fa-file-pdf mr-1"></i> Lihat PDF SLIK
+                                </a>
+                            @else
+                                <span class="text-red-500 text-sm">File belum diupload</span>
+                            @endif
+                        </div>
+                        <div class="col-span-2">
+                            <p class="text-xs text-gray-500 uppercase">Catatan Admin</p>
+                            <p class="text-sm text-gray-700 italic bg-white p-3 rounded border border-blue-100 mt-1">
+                                "{{ $application->slik_notes ?? 'Belum ada catatan' }}"
+                            </p>
+                        </div>
+                    @else
+                        <p class="text-gray-400">Belum ada upload SLIK dari Admin</p>
+                    @endisset
+                </div>
+            </div>
+
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h3 class="text-lg font-bold text-gray-800 border-b border-gray-100 pb-3 mb-4">
                     <i class="fa-solid fa-sack-dollar text-blue-600 mr-2"></i> Informasi Kredit
@@ -67,7 +99,6 @@
                 </div>
             </div>
 
-            {{-- 2. DATA PEMOHON --}}
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h3 class="text-lg font-bold text-gray-800 border-b border-gray-100 pb-3 mb-4">
                     <i class="fa-solid fa-user text-blue-600 mr-2"></i> Data Pemohon
@@ -92,7 +123,6 @@
                 </div>
             </div>
 
-            {{-- 3. DATA PASANGAN & PENJAMIN --}}
             @if ($application->detail)
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <h3 class="text-lg font-bold text-gray-800 border-b border-gray-100 pb-3 mb-4">
@@ -119,119 +149,204 @@
                 </div>
             @endif
 
-        </div>
-
-        {{-- KOLOM KANAN (Agunan & Dokumen) --}}
-        <div class="space-y-6">
-
-            {{-- 4. AGUNAN --}}
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <h3 class="text-lg font-bold text-gray-800 border-b border-gray-100 pb-3 mb-4">
-                    <i class="fa-solid fa-house-lock text-blue-600 mr-2"></i> Agunan
+                <h3 class="text-lg font-bold text-gray-800 border-b pb-3 mb-4">
+                    <i class="fa-solid fa-house-lock text-blue-600 mr-2"></i> Data Agunan
                 </h3>
                 @if ($application->collateral)
-                    <div class="space-y-4">
-                        {{-- Foto Preview --}}
-                        <div class="relative group rounded-lg overflow-hidden border border-gray-200">
-                            <img src="{{ Storage::url($application->collateral->foto_agunan) }}" alt="Foto Agunan"
-                                class="w-full h-48 object-cover">
-                            <a href="{{ Storage::url($application->collateral->foto_agunan) }}" target="_blank"
-                                class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
-                                <span class="text-white font-semibold text-sm"><i class="fa-solid fa-eye mr-1"></i>
-                                    Lihat Foto</span>
-                            </a>
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div class="w-full md:w-1/3">
+                            <div class="rounded-lg overflow-hidden border border-gray-200 group relative">
+                                <img src="{{ Storage::url($application->collateral->foto_agunan) }}"
+                                    class="w-full h-32 object-cover">
+                                <a href="{{ Storage::url($application->collateral->foto_agunan) }}" target="_blank"
+                                    class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                                    <span class="text-white text-xs font-bold">Lihat Foto</span>
+                                </a>
+                            </div>
                         </div>
 
-                        <div class="space-y-3">
+                        <div class="w-full md:w-2/3 grid grid-cols-2 gap-4">
                             <x-detail-item label="Jenis Sertifikat" :value="$application->collateral->jenis_agunan" />
                             <x-detail-item label="Nomor Sertifikat" :value="$application->collateral->nomor_sertifikat" />
                             <x-detail-item label="Atas Nama" :value="$application->collateral->atas_nama" />
-
-                            <div class="pt-2">
+                            @if ($application->collateral->jenis_agunan == 'SHGB')
+                                <x-detail-item label="Masa Berlaku" :value="$application->collateral->masa_berlaku->format('d F Y')" />
+                            @endif
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase font-semibold mb-1">File Sertifikat</p>
                                 <a href="{{ Storage::url($application->collateral->file_sertifikat) }}" target="_blank"
-                                    class="block w-full text-center py-2 px-4 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition">
-                                    <i class="fa-solid fa-file-pdf mr-2"></i> Lihat File Sertifikat
+                                    class="text-blue-600 text-xs font-bold bg-blue-50 px-3 py-1 rounded border border-blue-200 hover:bg-blue-100">
+                                    Lihat File Sertifikat
                                 </a>
                             </div>
                         </div>
                     </div>
                 @else
-                    <p class="text-gray-500 text-sm">Data agunan tidak tersedia.</p>
+                    <p class="text-gray-500 italic text-sm">Tidak ada data agunan.</p>
                 @endif
             </div>
 
-            {{-- 5. DOKUMEN PENDUKUNG --}}
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <h3 class="text-lg font-bold text-gray-800 border-b border-gray-100 pb-3 mb-4">
-                    <i class="fa-solid fa-folder-open text-blue-600 mr-2"></i> Dokumen
+                <h3 class="text-lg font-bold text-gray-800 border-b pb-3 mb-4">
+                    <i class="fa-solid fa-folder-open text-blue-600 mr-2"></i> Dokumen Pendukung
                 </h3>
-                <ul class="space-y-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     @foreach ($application->documents as $doc)
-                        <li
-                            class="flex items-center justify-between p-3 bg-gray-50 rounded-lg group hover:bg-blue-50 transition">
-                            <div class="flex items-center gap-3 overflow-hidden">
-                                <div class="bg-white p-2 rounded shadow-sm text-red-500">
-                                    <i class="fa-solid fa-file-pdf text-lg"></i>
+                        <a href="{{ Storage::url($doc->path) }}" target="_blank"
+                            class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition group">
+                            <div class="p-2 bg-red-100 text-red-600 rounded-lg mr-3 group-hover:bg-red-200">
+                                <i class="fa-solid fa-file-pdf"></i>
+                            </div>
+                            <div class="overflow-hidden">
+                                <p class="text-sm font-bold text-gray-700 truncate capitalize">
+                                    {{ str_replace('_', ' ', str_replace('_path', '', $doc->jenis_dokumen)) }}
+                                </p>
+                                <p class="text-xs text-blue-500 group-hover:underline">Klik untuk melihat</p>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
+        {{-- ================= KOLOM KANAN (READ ONLY KEPUTUSAN) ================= --}}
+        <div class="lg:col-span-1">
+            <div class="sticky top-24">
+                <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-6 mb-8">
+
+                    <h3 class="text-lg font-bold text-gray-900 border-b pb-3 mb-4">
+                        <i class="fa-solid fa-gavel text-gray-600 mr-2"></i> Keputusan Manager
+                    </h3>
+                    @isset($application->recommendation_status)
+                        {{-- Status Rekomendasi --}}
+                        <div class="mb-6">
+                            <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Status Rekomendasi</p>
+                            @if ($application->recommendation_status == 'Rekomendasi Disetujui')
+                                <div
+                                    class="bg-green-100 text-green-800 px-4 py-3 rounded-xl border border-green-200 flex items-center">
+                                    <i class="fa-solid fa-check-circle text-xl mr-3"></i>
+                                    <div>
+                                        <span class="block font-bold">DISETUJUI</span>
+                                        <span class="text-xs">Direkomendasikan Lanjut</span>
+                                    </div>
                                 </div>
-                                <div class="truncate">
-                                    <p class="text-sm font-medium text-gray-700 truncate capitalize">
-                                        {{ str_replace('_', ' ', str_replace('_path', '', $doc->jenis_dokumen)) }}
-                                    </p>
+                            @else
+                                <div
+                                    class="bg-red-100 text-red-800 px-4 py-3 rounded-xl border border-red-200 flex items-center">
+                                    <i class="fa-solid fa-times-circle text-xl mr-3"></i>
+                                    <div>
+                                        <span class="block font-bold">DITOLAK</span>
+                                        <span class="text-xs">Tidak Direkomendasikan</span>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+
+                        {{-- Detail Angka (Hanya muncul jika disetujui) --}}
+                        @if ($application->recommendation_status == 'Rekomendasi Disetujui')
+                            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6 space-y-4">
+                                <div>
+                                    <p class="text-xs text-gray-500 uppercase">Plafond Direkomendasikan</p>
+                                    <p class="text-xl font-bold text-green-700">Rp
+                                        {{ number_format($application->manager_recommended_amount, 0, ',', '.') }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-500 uppercase">Tenor Direkomendasikan</p>
+                                    <p class="text-xl font-bold text-gray-800">
+                                        {{ $application->manager_recommended_tenor }}
+                                        Bulan</p>
                                 </div>
                             </div>
-                            <a href="{{ Storage::url($doc->path) }}" target="_blank"
-                                class="text-gray-400 hover:text-blue-600 p-2" title="Lihat Dokumen">
-                                <i class="fa-solid fa-external-link-alt"></i>
-                            </a>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
-        </div>
-    </div>
+                        @endif
 
-    {{-- COMPONENT MODAL (Untuk Aksi Approve/Reject) --}}
-    {{-- 1. Modal Reject --}}
-    <div id="rejectModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title"
-        role="dialog" aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-                onclick="closeModal('rejectModal')"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-            <div
-                class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
-                <form action="#" method="POST"> {{-- Nanti isi routenya --}}
-                    @csrf
-                    <div class="bg-white p-6">
-                        <div class="flex items-center gap-3 mb-4 text-red-600">
-                            <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
-                            <h3 class="text-lg font-bold text-gray-900">Tolak Pengajuan?</h3>
+                        {{-- Catatan --}}
+                        <div class="mb-6">
+                            <p class="text-xs text-gray-500 uppercase font-semibold mb-2">Catatan Analisa (5C)</p>
+                            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 text-sm text-gray-700 italic">
+                                "{{ $application->manager_note }}"
+                            </div>
                         </div>
-                        <p class="text-sm text-gray-500 mb-4">Apakah Anda yakin ingin menolak pengajuan ini? Tindakan
-                            ini tidak dapat dibatalkan.</p>
 
-                        {{-- Alasan Penolakan (Optional Feature) --}}
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Alasan Penolakan
-                                (Opsional)</label>
-                            <textarea name="catatan" rows="3"
-                                class="w-full border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500"
-                                placeholder="Contoh: Dokumen kurang lengkap..."></textarea>
+                        {{-- Info Waktu --}}
+                        <div class="text-center text-xs text-gray-400 pt-4 border-t">
+                            Diproses <b>{{ $application->manager->name }}</b> pada:
+                            {{ $application->managed_at ? $application->managed_at->format('d F Y, H:i') : '-' }} WIB
                         </div>
-                    </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                        <button type="submit"
-                            class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
-                            Tolak Pengajuan
-                        </button>
-                        <button type="button" onclick="closeModal('rejectModal')"
-                            class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                            Batal
-                        </button>
-                    </div>
-                </form>
+                    @else
+                        <p class="text-gray-400">Belum ada rekomendasi dari Manager</p>
+                    @endisset
+
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-6">
+
+                    <h3 class="text-lg font-bold text-gray-900 border-b pb-3 mb-4">
+                        <i class="fa-solid fa-gavel text-gray-600 mr-2"></i> Keputusan Direktur
+                    </h3>
+
+                    @if ($application->status == 'Disetujui' || $application->status == 'Ditolak' || $application->status == 'Lunas')
+                        {{-- Persetujuan Direktur --}}
+                        <div class="mb-6">
+                            <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Status Pengajuan</p>
+                            @if ($application->status == 'Disetujui')
+                                <div
+                                    class="bg-green-100 text-green-800 px-4 py-3 rounded-xl border border-green-200 flex items-center">
+                                    <i class="fa-solid fa-check-circle text-xl mr-3"></i>
+                                    <div>
+                                        <span class="block font-bold">DISETUJUI</span>
+                                        <span class="text-xs">Pengajuan kredit telah disetujui</span>
+                                    </div>
+                                </div>
+                            @else
+                                <div
+                                    class="bg-red-100 text-red-800 px-4 py-3 rounded-xl border border-red-200 flex items-center">
+                                    <i class="fa-solid fa-times-circle text-xl mr-3"></i>
+                                    <div>
+                                        <span class="block font-bold">DITOLAK</span>
+                                        <span class="text-xs">Pengajuan kredit telah ditolak</span>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+
+                        {{-- Detail Angka (Hanya muncul jika disetujui) --}}
+                        @if ($application->recommendation_status == 'Rekomendasi Disetujui')
+                            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6 space-y-4">
+                                <div>
+                                    <p class="text-xs text-gray-500 uppercase">Plafond Disetujui</p>
+                                    <p class="text-xl font-bold text-green-700">Rp
+                                        {{ number_format($application->recommended_amount, 0, ',', '.') }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-500 uppercase">Tenor Disetujui</p>
+                                    <p class="text-xl font-bold text-gray-800">{{ $application->recommended_tenor }}
+                                        Bulan</p>
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- Catatan --}}
+                        <div class="mb-6">
+                            <p class="text-xs text-gray-500 uppercase font-semibold mb-2">Catatan Direktur</p>
+                            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 text-sm text-gray-700 italic">
+                                "{{ $application->direktur_note }}"
+                            </div>
+                        </div>
+
+                        {{-- Info Waktu --}}
+                        <div class="text-center text-xs text-gray-400 pt-4 border-t">
+                            Diproses <b>{{ $application->direktur->name }}</b> pada:
+                            {{ $application->approved_at ? $application->approved_at->format('d F Y, H:i') : '-' }} WIB
+                        </div>
+                    @else
+                        <p class="text-gray-400">Belum ada keputusan dari Direktur</p>
+                    @endif
+
+                </div>
             </div>
+
         </div>
+
     </div>
 </x-layouts.app>

@@ -20,6 +20,10 @@ class CreditCollateral extends Model
         'file_pbb'
     ];
 
+    protected $casts = [
+        'masa_berlaku' => 'date',
+    ];
+
     public function creditApplication()
     {
         return $this->belongsTo(CreditApplication::class);
