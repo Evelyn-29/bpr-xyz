@@ -129,9 +129,9 @@
                             -
                         @endif
                     </td>
-                    <td>{{ $app->catatan_manager }}</td>
-                    <td>{{ $app->catatan_direktur }}</td>
-                    <td>{{ number_format($app->recommended_amount) }}}</td>
+                    <td>{{ $app->manager_note ?? '-' }}</td>
+                    <td>{{ $app->direktur_note ?? '-' }}</td>
+                    <td>{{ number_format($app->recommended_amount) }}</td>
                     <td style="text-align:center; font-weight:bold">{{ $app->status }}</td>
                 </tr>
             @endforeach
