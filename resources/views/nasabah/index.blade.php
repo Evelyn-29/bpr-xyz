@@ -24,7 +24,7 @@
         @endif
 
         <h2 class="text-2xl font-semibold mb-4 text-gray-800">Produk Kredit Unggulan Kami</h2>
-        <p class="text-gray-600 mb-8">Kredit Parinama bertujuan memberikan solusi bagi anda yang membutuhkan pinjaman
+        <p class="text-gray-600 mb-8">Produk Kredit bertujuan memberikan solusi bagi anda yang membutuhkan pinjaman
             baik untuk kebutuhan konsumtif, investasi ataupun modal kerja dengan syarat yang mudah dan proses yang
             cepat.</p>
 

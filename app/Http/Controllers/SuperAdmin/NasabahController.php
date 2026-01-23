@@ -17,11 +17,13 @@ class NasabahController extends Controller
         // Search logic
         $query->when($request->search, function ($q) use ($request) {
             $q->where('nama_lengkap', 'like', '%' . $request->search . '%')
-              ->orWhere('no_ktp', 'like', '%' . $request->search . '%')
-              ->orWhere('kode_nasabah', 'like', '%' . $request->search . '%');
+                ->orWhere('no_ktp', 'like', '%' . $request->search . '%')
+                ->orWhere('kode_nasabah', 'like', '%' . $request->search . '%');
         });
 
-        $nasabahs = $query->paginate(10)->withQueryString();
+        /** @var \Illuminate\Pagination\LengthAwarePaginator $nasabahs */
+        $nasabahs = $query->paginate(10);
+        $nasabahs = $nasabahs->withQueryString();
 
         return view('superadmin.master.nasabah.index', compact('nasabahs'));
     }
@@ -69,7 +71,6 @@ class NasabahController extends Controller
             });
 
             return redirect()->route('app.nasabah.index')->with('success', 'Data krusial nasabah berhasil diperbarui.');
-
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal update: ' . $e->getMessage())->withInput();
         }
@@ -78,12 +79,12 @@ class NasabahController extends Controller
     public function destroy($id)
     {
         $nasabah = NasabahProfile::findOrFail($id);
-        
+
         // Hapus User Login-nya juga (Soft Delete)
         if ($nasabah->user) {
             $nasabah->user->delete();
         }
-        
+
         // Hapus Profil
         $nasabah->delete();
 

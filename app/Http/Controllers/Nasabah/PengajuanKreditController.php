@@ -77,8 +77,7 @@ class PengajuanKreditController extends Controller
 
     private function generateKodeNasabah()
     {
-        $prefix = 'NSBPAR-' . date('Ym') . '-';
-        //$prefix = 'NSBXYZ-' . date('Ym') . '-';
+        $prefix = 'NSB-' . date('Ym') . '-';
 
         $lastProfile = NasabahProfile::where('kode_nasabah', 'like', $prefix . '%')
             ->orderBy('kode_nasabah', 'desc')

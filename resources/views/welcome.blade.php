@@ -54,13 +54,13 @@
             <h3 class="text-3xl font-bold text-[#0d1b2a] mb-8">Layanan Kami</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition">
-                    <h4 class="text-xl font-semibold mb-2 text-[#0d1b2a]">Deposito Parinama</h4>
+                    <h4 class="text-xl font-semibold mb-2 text-[#0d1b2a]">Deposito</h4>
                     <p class="text-gray-600">Investasikan dana Anda dengan bunga tinggi dan jaminan keamanan terbaik.
                     </p>
                 </div>
 
                 <div class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition">
-                    <h4 class="text-xl font-semibold mb-2 text-[#0d1b2a]">Tabungan Parinama</h4>
+                    <h4 class="text-xl font-semibold mb-2 text-[#0d1b2a]">Tabungan</h4>
                     <p class="text-gray-600">Nikmati kemudahan menabung dengan bunga kompetitif dan akses cepat.</p>
                 </div>
 
